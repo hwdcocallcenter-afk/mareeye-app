@@ -1,16 +1,27 @@
 {
   "name": "mareeye-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Mareeye — AI-ga garta cudurrada dalagga (Wasaaradda Beeraha iyo Waraabka)",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mongoose": "^8.9.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.2",
+    "supertest": "^7.0.0"
   }
 }
