@@ -62,17 +62,29 @@ router.post(
   ],
   validateRequest,
   async (req, res, next) => {
+    // TEMPORARY TRACE LOGGING — request-level tracing for the login/signup
+    // spinner investigation. Remove once resolved.
+    const t0 = Date.now();
+    console.log(`[TRACE] register: request received (email=${req.body?.email})`);
     try {
       const { name, email, password } = req.body;
+      console.log(`[TRACE] register: validation passed (+${Date.now() - t0}ms)`);
       const existing = await User.findOne({ email });
+      console.log(`[TRACE] register: MongoDB findOne query done, existing=${!!existing} (+${Date.now() - t0}ms)`);
       if (existing) {
+        console.log(`[TRACE] register: responding 409 duplicate (+${Date.now() - t0}ms)`);
         return res.status(409).json({ error: 'Email-kan horey ayaa loo isticmaalay.' });
       }
       const passwordHash = await hashPassword(password);
+      console.log(`[TRACE] register: password hashed (+${Date.now() - t0}ms)`);
       const user = await User.create({ name, email, passwordHash });
+      console.log(`[TRACE] register: MongoDB create done, id=${user._id} (+${Date.now() - t0}ms)`);
       const tokens = await issueTokenPair(user._id);
+      console.log(`[TRACE] register: JWT generated (+${Date.now() - t0}ms)`);
       res.status(201).json({ user: toPublicUser(user), ...tokens });
+      console.log(`[TRACE] register: response sent, status=201 (+${Date.now() - t0}ms)`);
     } catch (e) {
+      console.log(`[TRACE] register: EXCEPTION (+${Date.now() - t0}ms): ${e.message}`);
       next(e);
     }
   }
@@ -88,17 +100,28 @@ router.post(
   ],
   validateRequest,
   async (req, res, next) => {
+    // TEMPORARY TRACE LOGGING — same purpose as /register above. Remove
+    // once resolved.
+    const t0 = Date.now();
+    console.log(`[TRACE] login: request received (email=${req.body?.email})`);
     try {
       const { email, password } = req.body;
+      console.log(`[TRACE] login: validation passed (+${Date.now() - t0}ms)`);
       const user = await User.findOne({ email }).select('+passwordHash');
+      console.log(`[TRACE] login: MongoDB query done, found=${!!user} (+${Date.now() - t0}ms)`);
       const hashToCompare = user ? user.passwordHash : DUMMY_HASH;
       const ok = await verifyPassword(password, hashToCompare);
+      console.log(`[TRACE] login: password verification done, ok=${ok} (+${Date.now() - t0}ms)`);
       if (!user || !ok) {
+        console.log(`[TRACE] login: responding 401 (+${Date.now() - t0}ms)`);
         return res.status(401).json({ error: 'Email ama password-ku waa khalad.' });
       }
       const tokens = await issueTokenPair(user._id);
+      console.log(`[TRACE] login: JWT generated (+${Date.now() - t0}ms)`);
       res.json({ user: toPublicUser(user), ...tokens });
+      console.log(`[TRACE] login: response sent, status=200 (+${Date.now() - t0}ms)`);
     } catch (e) {
+      console.log(`[TRACE] login: EXCEPTION (+${Date.now() - t0}ms): ${e.message}`);
       next(e);
     }
   }
